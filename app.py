@@ -222,12 +222,12 @@ def show_login():
                 st.session_state.authenticated = True
                 st.session_state.user_role = "admin"
                 st.success("Login successful! You have full access.")
-                st.experimental_rerun()
+                st.rerun()
             elif check_password(password, VIEWER_PASSWORD_HASH):
                 st.session_state.authenticated = True
                 st.session_state.user_role = "viewer"
                 st.success("Login successful! You have view-only access.")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Incorrect password. Please try again.")
     
@@ -882,7 +882,7 @@ def load_data():
             st.session_state.fundraising = data.get("fundraising", st.session_state.fundraising)
             
             st.success("Data loaded successfully")
-            st.experimental_rerun()
+            st.rerun()
         except Exception as e:
             st.error(f"Error loading data: {e}")
 
@@ -890,7 +890,7 @@ def load_data():
 def logout():
     st.session_state.authenticated = False
     st.session_state.user_role = None
-    st.experimental_rerun()
+                st.rerun()
 
 # Main app
 def main():
