@@ -34,7 +34,7 @@ USER_CREDENTIALS = {
         "role": "admin"
     },
     "viewer": {
-        "password_hash": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",  # "year11com"
+        "password_hash": "5b7c60f0bd95774b6ecbebc4c03ac986f93b8e9e2b9a7523b65a7b2b79bfbb31",  # "viewer"
         "role": "viewer"
     }
 }
