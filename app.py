@@ -15,6 +15,9 @@ st.set_page_config(
 # These would ideally be stored more securely in a production environment
 def check_credentials(username, password, user_credentials):
     """Check if username and password match stored credentials"""
+    # Trim any leading/trailing whitespace
+    username = username.strip()
+    password = password.strip()
     if username in user_credentials:
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         return hashed_password == user_credentials[username]["password_hash"]
@@ -240,9 +243,9 @@ def show_login():
         if submitted:
             if check_credentials(username, password, USER_CREDENTIALS):
                 st.session_state.authenticated = True
-                st.session_state.username = username
-                st.session_state.user_role = get_user_role(username, USER_CREDENTIALS)
-                st.success(f"Login successful! Welcome {username}.")
+                st.session_state.username = username.strip()
+                st.session_state.user_role = get_user_role(username.strip(), USER_CREDENTIALS)
+                st.success(f"Login successful! Welcome {username.strip()}.")
                 st.rerun()
             else:
                 st.error("Incorrect username or password. Please try again.")
