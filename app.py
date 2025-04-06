@@ -11,35 +11,16 @@ st.set_page_config(
     layout="wide"
 )
 
-# Password configuration
-# These would ideally be stored more securely in a production environment
-def check_credentials(username, password, user_credentials):
-    """Check if username and password match stored credentials"""
-    # Trim any leading/trailing whitespace
-    username = username.strip()
-    password = password.strip()
-    if username in user_credentials:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        return hashed_password == user_credentials[username]["password_hash"]
-    return False
-
-def get_user_role(username, user_credentials):
-    """Get the role for a username"""
-    if username in user_credentials:
-        return user_credentials[username]["role"]
-    return None
-
-# User credentials - in a real app, this would be stored more securely
-# Format: {"username": {"password_hash": "hash_value", "role": "admin or viewer"}}
+# Define user credentials directly (in a real application, store these securely)
 USER_CREDENTIALS = {
-    "admin": {
-        "password_hash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",  # "password"
-        "role": "admin"
-    },
-    "viewer": {
-        "password_hash": "5b7c60f0bd95774b6ecbebc4c03ac986f93b8e9e2b9a7523b65a7b2b79bfbb31",  # "viewer"
-        "role": "viewer"
-    }
+    "admin": "password",
+    "viewer": "viewer"
+}
+
+# User roles
+USER_ROLES = {
+    "admin": "admin",
+    "viewer": "viewer"
 }
 
 # Initialize session state variables if they don't exist
@@ -236,16 +217,17 @@ def show_login():
     
     # Create a login form
     with st.form("login_form"):
-        username = st.text_input("Username")
+        username = st.text_input("Username").strip().lower()
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Login")
         
         if submitted:
-            if check_credentials(username, password, USER_CREDENTIALS):
+            # Simple direct credential check - no hashing to keep it simple and reliable
+            if username in USER_CREDENTIALS and password == USER_CREDENTIALS[username]:
                 st.session_state.authenticated = True
-                st.session_state.username = username.strip()
-                st.session_state.user_role = get_user_role(username.strip(), USER_CREDENTIALS)
-                st.success(f"Login successful! Welcome {username.strip()}.")
+                st.session_state.username = username
+                st.session_state.user_role = USER_ROLES[username]
+                st.success(f"Login successful! Welcome {username}.")
                 st.rerun()
             else:
                 st.error("Incorrect username or password. Please try again.")
@@ -934,7 +916,7 @@ def show_settings():
         st.write("Load data from a backup file:")
         load_data()
     
-    # Password management
+    # User management
     st.subheader("User Management")
     st.info("For security reasons, user credentials can only be modified directly in the source code.")
     st.write("Please contact the system administrator to add or update user accounts.")
