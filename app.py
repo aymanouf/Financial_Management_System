@@ -33,6 +33,7 @@ st.markdown("""
     /* Make dataframes scroll horizontally on small screens */
     .stDataFrame {
         overflow-x: auto;
+        max-width: 100%;
     }
     
     /* Improve button layout */
@@ -40,13 +41,52 @@ st.markdown("""
         width: 100%;
     }
     
-    /* Adjust metrics for mobile */
-    @media screen and (max-width: 640px) {
+    /* Adjust font sizes for better readability */
+    .dataframe {
+        font-size: 0.85rem;
+    }
+    
+    /* Improve table display */
+    [data-testid="stTable"] {
+        overflow-x: auto;
+        max-width: 100%;
+        display: block;
+    }
+    
+    /* Force column wrapping on medium screens (laptops) */
+    @media screen and (max-width: 1200px) {
+        .medium-stack {
+            flex-direction: column !important;
+        }
+        .medium-stack > div {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            margin-bottom: 1rem;
+        }
+        /* Reduce table font size on medium screens */
+        .dataframe {
+            font-size: 0.8rem;
+        }
+    }
+    
+    /* Adjust metrics for small screens */
+    @media screen and (max-width: 992px) {
         [data-testid="stMetricValue"] {
             font-size: 1.1rem !important;
         }
         [data-testid="stMetricDelta"] {
             font-size: 0.8rem !important;
+        }
+    }
+    
+    /* Adjust metrics for mobile */
+    @media screen and (max-width: 640px) {
+        [data-testid="stMetricValue"] {
+            font-size: 1rem !important;
+        }
+        [data-testid="stMetricDelta"] {
+            font-size: 0.7rem !important;
         }
         .st-emotion-cache-u8hs99 {
             flex-direction: column !important;
@@ -115,6 +155,16 @@ def get_device_type():
     elif 'tablet' in user_agent.lower() or 'ipad' in user_agent.lower():
         return "tablet"
     else:
+        # Try to determine based on window width if available
+        try:
+            if hasattr(st, 'experimental_get_viewport_size'):
+                width = st.experimental_get_viewport_size()['width']
+                if width < 768:
+                    return "mobile"
+                elif width < 1200:
+                    return "tablet"
+        except:
+            pass
         return "desktop"
 
 # Initialize session state variables if they don't exist
@@ -351,25 +401,36 @@ def show_login():
 def show_dashboard():
     st.header("Financial Dashboard")
     
-    # Summary cards in a row
-    # Use the mobile-stack class for responsive columns
-    cols_div = '<div class="mobile-stack">'
+    # Summary cards in a row - use medium-stack for better handling on laptops
+    cols_div = '<div class="medium-stack">'
     st.markdown(cols_div, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns(3)
-    
-    balance = get_balance()
-    reserve = get_emergency_reserve()
-    available = balance - reserve
-    
-    with col1:
+    # Use different layouts based on screen size
+    if st.session_state.device_type == "mobile":
+        # On very small screens, stack all metrics
+        balance = get_balance()
+        reserve = get_emergency_reserve()
+        available = balance - reserve
+        
         st.metric("Current Balance", f"KD {balance:.2f}")
-    
-    with col2:
         st.metric("Emergency Reserve (15%)", f"KD {reserve:.2f}")
-    
-    with col3:
         st.metric("Available Funds", f"KD {available:.2f}")
+    else:
+        # On larger screens, use columns
+        col1, col2, col3 = st.columns(3)
+        
+        balance = get_balance()
+        reserve = get_emergency_reserve()
+        available = balance - reserve
+        
+        with col1:
+            st.metric("Current Balance", f"KD {balance:.2f}")
+        
+        with col2:
+            st.metric("Emergency Reserve (15%)", f"KD {reserve:.2f}")
+        
+        with col3:
+            st.metric("Available Funds", f"KD {available:.2f}")
     
     # Recent transactions
     st.subheader("Recent Transactions")
@@ -391,43 +452,39 @@ def show_dashboard():
     # Budget overview with tables
     st.subheader("Budget Overview")
     
-    # Use the mobile-stack class for responsive columns
-    cols_div = '<div class="mobile-stack">'
+    # Use the medium-stack class for better handling on medium screens
+    cols_div = '<div class="medium-stack">'
     st.markdown(cols_div, unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
+    # Income budget vs actual - single column layout for better readability
+    st.write("**Income: Budget vs. Actual**")
+    income_data = []
+    for category, values in st.session_state.budget["income"].items():
+        income_data.append({
+            "Category": category,
+            "Budget": f"KD {values['budget']:.2f}",
+            "Actual": f"KD {values['actual']:.2f}",
+            "Variance": f"KD {values['actual'] - values['budget']:.2f}"
+        })
     
-    with col1:
-        # Income budget vs actual
-        st.write("**Income: Budget vs. Actual**")
-        income_data = []
-        for category, values in st.session_state.budget["income"].items():
-            income_data.append({
-                "Category": category,
-                "Budget": f"KD {values['budget']:.2f}",
-                "Actual": f"KD {values['actual']:.2f}",
-                "Variance": f"KD {values['actual'] - values['budget']:.2f}"
-            })
-        
-        if income_data:
-            income_df = pd.DataFrame(income_data)
-            st.dataframe(income_df, use_container_width=True)
+    if income_data:
+        income_df = pd.DataFrame(income_data)
+        st.dataframe(income_df, use_container_width=True)
     
-    with col2:
-        # Expense budget vs actual
-        st.write("**Expenses: Budget vs. Actual**")
-        expense_data = []
-        for category, values in st.session_state.budget["expenses"].items():
-            expense_data.append({
-                "Category": category,
-                "Budget": f"KD {values['budget']:.2f}",
-                "Actual": f"KD {values['actual']:.2f}",
-                "Variance": f"KD {values['actual'] - values['budget']:.2f}"
-            })
-        
-        if expense_data:
-            expense_df = pd.DataFrame(expense_data)
-            st.dataframe(expense_df, use_container_width=True)
+    # Expense budget vs actual
+    st.write("**Expenses: Budget vs. Actual**")
+    expense_data = []
+    for category, values in st.session_state.budget["expenses"].items():
+        expense_data.append({
+            "Category": category,
+            "Budget": f"KD {values['budget']:.2f}",
+            "Actual": f"KD {values['actual']:.2f}",
+            "Variance": f"KD {values['actual'] - values['budget']:.2f}"
+        })
+    
+    if expense_data:
+        expense_df = pd.DataFrame(expense_data)
+        st.dataframe(expense_df, use_container_width=True)
     
     # Close the mobile-stack div
     st.markdown('</div>', unsafe_allow_html=True)
@@ -676,27 +733,41 @@ def show_budget():
     total_expense_budget = sum(values["budget"] for values in st.session_state.budget["expenses"].values())
     total_expense_actual = sum(values["actual"] for values in st.session_state.budget["expenses"].values())
     
-    # Display summary metrics
-    # Use the mobile-stack class for responsive columns
-    cols_div = '<div class="mobile-stack">'
+    # Display summary metrics with better responsive handling
+    cols_div = '<div class="medium-stack">'
     st.markdown(cols_div, unsafe_allow_html=True)
     
-    # Use 2x2 grid for mobile and 4x1 for desktop
+    # On mobile, use 2x2 grid
     if st.session_state.device_type == "mobile":
-        col1, col2 = st.columns(2)
-        
-        with col1:
+        row1_cols = st.columns(2)
+        with row1_cols[0]:
             st.metric("Income Budget", f"KD {total_income_budget:.2f}")
-        with col2:
+        with row1_cols[1]:
             st.metric("Income Actual", f"KD {total_income_actual:.2f}", 
                     f"{(total_income_actual - total_income_budget):.2f}")
         
-        col3, col4 = st.columns(2)
-        with col3:
+        row2_cols = st.columns(2)
+        with row2_cols[0]:
             st.metric("Expense Budget", f"KD {total_expense_budget:.2f}")
-        with col4:
+        with row2_cols[1]:
             st.metric("Expense Actual", f"KD {total_expense_actual:.2f}", 
                     f"{(total_expense_actual - total_expense_budget):.2f}")
+    # On iPad/small laptop screens, use 2x2 grid
+    elif st.session_state.device_type == "tablet" or (hasattr(st, 'experimental_get_viewport_size') and st.experimental_get_viewport_size()['width'] < 1100):
+        row1_cols = st.columns(2)
+        with row1_cols[0]:
+            st.metric("Total Income Budget", f"KD {total_income_budget:.2f}")
+        with row1_cols[1]:
+            st.metric("Total Income Actual", f"KD {total_income_actual:.2f}", 
+                    f"{(total_income_actual - total_income_budget):.2f}")
+        
+        row2_cols = st.columns(2)
+        with row2_cols[0]:
+            st.metric("Total Expense Budget", f"KD {total_expense_budget:.2f}")
+        with row2_cols[1]:
+            st.metric("Total Expense Actual", f"KD {total_expense_actual:.2f}", 
+                    f"{(total_expense_actual - total_expense_budget):.2f}")
+    # On larger screens, use 4 columns
     else:
         col1, col2, col3, col4 = st.columns(4)
         
@@ -714,51 +785,45 @@ def show_budget():
             st.metric("Total Expense Actual", f"KD {total_expense_actual:.2f}", 
                     f"{(total_expense_actual - total_expense_budget):.2f}")
     
-    # Close the mobile-stack div
+    # Close the medium-stack div
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Budget tables
-    # Use the mobile-stack class for responsive columns
-    cols_div = '<div class="mobile-stack">'
+    # Use the medium-stack class to handle medium screens (laptops) better
+    cols_div = '<div class="medium-stack">'
     st.markdown(cols_div, unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
+    # Income Budget
+    st.subheader("Income Budget")
+    income_data = []
+    for category, values in st.session_state.budget["income"].items():
+        income_data.append({
+            "Category": category,
+            "Budget": f"KD {values['budget']:.2f}",
+            "Actual": f"KD {values['actual']:.2f}",
+            "Variance": f"KD {values['actual'] - values['budget']:.2f}"
+        })
     
-    with col1:
-        st.subheader("Income Budget")
-        
-        income_data = []
-        for category, values in st.session_state.budget["income"].items():
-            income_data.append({
-                "Category": category,
-                "Budget": f"KD {values['budget']:.2f}",
-                "Actual": f"KD {values['actual']:.2f}",
-                "Variance": f"KD {values['actual'] - values['budget']:.2f}",
-                "% of Budget": f"{(values['actual'] / values['budget'] * 100):.1f}%" if values['budget'] > 0 else "N/A"
-            })
-        
-        if income_data:
-            income_df = pd.DataFrame(income_data)
-            st.dataframe(income_df, use_container_width=True)
+    if income_data:
+        income_df = pd.DataFrame(income_data)
+        st.dataframe(income_df, use_container_width=True)
     
-    with col2:
-        st.subheader("Expense Budget")
-        
-        expense_data = []
-        for category, values in st.session_state.budget["expenses"].items():
-            expense_data.append({
-                "Category": category,
-                "Budget": f"KD {values['budget']:.2f}",
-                "Actual": f"KD {values['actual']:.2f}",
-                "Variance": f"KD {values['actual'] - values['budget']:.2f}",
-                "% of Budget": f"{(values['actual'] / values['budget'] * 100):.1f}%" if values['budget'] > 0 else "N/A"
-            })
-        
-        if expense_data:
-            expense_df = pd.DataFrame(expense_data)
-            st.dataframe(expense_df, use_container_width=True)
+    # Expense Budget
+    st.subheader("Expense Budget")
+    expense_data = []
+    for category, values in st.session_state.budget["expenses"].items():
+        expense_data.append({
+            "Category": category,
+            "Budget": f"KD {values['budget']:.2f}",
+            "Actual": f"KD {values['actual']:.2f}",
+            "Variance": f"KD {values['actual'] - values['budget']:.2f}"
+        })
     
-    # Close the mobile-stack div
+    if expense_data:
+        expense_df = pd.DataFrame(expense_data)
+        st.dataframe(expense_df, use_container_width=True)
+    
+    # Close the medium-stack div
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Budget visualization as text
