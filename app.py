@@ -23,13 +23,29 @@ st.markdown("""
     div[data-baseweb="input"], div[data-baseweb="textarea"] {
         width: 100%;
     }
-    /* Enhance table styling */
+    /* Enhance table styling - hide scrollbars when not needed */
     .stDataFrame {
-        overflow-x: auto;
         max-width: 100%;
         border: 1px solid #e6e6e6;
         border-radius: 5px;
         margin-bottom: 1.5rem;
+    }
+    
+    /* Hide scrollbars unless actively scrolling */
+    .stDataFrame::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+        background-color: transparent;
+    }
+    
+    .stDataFrame::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+    }
+    
+    /* Fix table overflow issues */
+    .stDataFrame > div {
+        overflow: visible !important;
     }
     /* Add some spacing between sections */
     h2, h3, .stSubheader {
@@ -52,9 +68,12 @@ st.markdown("""
     }
     /* Improve table display */
     [data-testid="stTable"] {
-        overflow-x: auto;
         max-width: 100%;
-        display: block;
+    }
+    
+    /* Fix table container issues */
+    div[data-testid="stTable"] > div {
+        overflow: visible !important;
     }
     /* Improve table column sizes */
     table.dataframe th {
@@ -471,7 +490,12 @@ def show_dashboard():
     
     if income_data:
         income_df = pd.DataFrame(income_data)
-        st.dataframe(income_df, use_container_width=True)
+        st.dataframe(
+            income_df, 
+            use_container_width=True,
+            hide_index=True,
+            height=min(len(income_df) * 35 + 38, 250)  # Adaptive height based on content
+        )
     
     # Expense budget vs actual
     st.subheader("Expenses: Budget vs. Actual")
@@ -486,7 +510,12 @@ def show_dashboard():
     
     if expense_data:
         expense_df = pd.DataFrame(expense_data)
-        st.dataframe(expense_df, use_container_width=True)
+        st.dataframe(
+            expense_df, 
+            use_container_width=True,
+            hide_index=True,
+            height=min(len(expense_df) * 35 + 38, 250)  # Adaptive height based on content
+        )
     
     # Quick actions (shown only to admin users)
     if st.session_state.user_role == "admin":
@@ -588,7 +617,12 @@ def show_transactions():
         # Select columns to display
         display_columns = [col for col in ["date", "description", "category", "income", "expense", "authorized_by", "receipt_num", "notes"]
                            if col in transactions_df.columns]
-        st.dataframe(transactions_df[display_columns], use_container_width=True)
+                        st.dataframe(
+                    transactions_df[display_columns], 
+                    use_container_width=True,
+                    hide_index=True,
+                    height=min(len(transactions_df) * 35 + 38, 300)  # Adaptive height based on content
+                )
         
         # Export option
         if st.button("Export Transactions to CSV", use_container_width=True):
@@ -857,7 +891,12 @@ def show_events():
             display_columns = [col for col in ["Event Name", "Date", "Location", "Coordinator", 
                                "Projected Income", "Projected Expenses", "Status"]
                                if col in display_df.columns]
-            st.dataframe(display_df[display_columns], use_container_width=True)
+            st.dataframe(
+                display_df[display_columns], 
+                use_container_width=True,
+                hide_index=True,
+                height=min(len(display_df) * 35 + 38, 300)  # Adaptive height based on content
+            )
         except Exception as e:
             st.error(f"Error displaying events: {e}")
             st.write(events_df)
@@ -1037,7 +1076,13 @@ def show_reports():
                 # Select columns to display
                 display_columns = [col for col in ["date", "description", "category", "income", "expense", "authorized_by"]
                                   if col in transactions_df.columns]
-                st.dataframe(transactions_df[display_columns], use_container_width=True)
+                # Set an appropriate fixed height based on row count to avoid scrollbars
+            st.dataframe(
+                transactions_df[display_columns], 
+                use_container_width=True,
+                hide_index=True,
+                height=min(len(transactions_df) * 35 + 38, 400)  # Adaptive height based on content
+            )
             else:
                 st.info("No transactions for this period.")
     
@@ -1119,7 +1164,12 @@ def show_fundraising():
             display_columns = [col for col in ["Initiative Name", "Dates", "Coordinator", 
                               "Goal Amount", "Amount Raised", "Status"]
                               if col in display_df.columns]
-            st.dataframe(display_df[display_columns], use_container_width=True)
+            st.dataframe(
+                display_df[display_columns], 
+                use_container_width=True,
+                hide_index=True,
+                height=min(len(display_df) * 35 + 38, 300)  # Adaptive height based on content
+            )
         except Exception as e:
             st.error(f"Error displaying fundraising initiatives: {e}")
             st.write(fundraising_df)
