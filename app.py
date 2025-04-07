@@ -12,78 +12,73 @@ st.set_page_config(
     layout="wide"
 )
 
-# Add custom CSS for responsiveness - properly enclosed in style tags
+# Add custom CSS for responsiveness
 st.markdown("""
-<style>
+    /* Improve general responsiveness */
+    .stApp {
+        max-width: 100%;
+    }
+    
     /* Make text responsive */
     h1, h2, h3 {
         margin-top: 0;
     }
+    
     /* Improve form input fields */
     div[data-baseweb="input"], div[data-baseweb="textarea"] {
         width: 100%;
     }
-    /* Enhance table styling - hide scrollbars when not needed */
+    
+    /* Enhance table styling */
     .stDataFrame {
+        overflow-x: auto;
         max-width: 100%;
         border: 1px solid #e6e6e6;
         border-radius: 5px;
         margin-bottom: 1.5rem;
     }
     
-    /* Hide scrollbars unless actively scrolling */
-    .stDataFrame::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-        background-color: transparent;
-    }
-    
-    .stDataFrame::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
-    }
-    
-    /* Fix table overflow issues */
-    .stDataFrame > div {
-        overflow: visible !important;
-    }
     /* Add some spacing between sections */
     h2, h3, .stSubheader {
         margin-top: 1.5rem !important;
         margin-bottom: 1rem !important;
     }
+    
     /* Style info messages better */
     .st-emotion-cache-16txz8 {
         padding: 1rem;
         border-radius: 5px;
         margin-bottom: 1.5rem;
     }
+    
     /* Improve button layout */
     .stButton > button {
         width: 100%;
     }
+    
     /* Adjust font sizes for better readability */
     .dataframe {
         font-size: 0.85rem;
     }
+    
     /* Improve table display */
     [data-testid="stTable"] {
+        overflow-x: auto;
         max-width: 100%;
+        display: block;
     }
     
-    /* Fix table container issues */
-    div[data-testid="stTable"] > div {
-        overflow: visible !important;
-    }
     /* Improve table column sizes */
     table.dataframe th {
         padding: 0.5rem !important;
         min-width: 80px;
     }
+    
     table.dataframe td {
         padding: 0.5rem !important;
         white-space: nowrap;
     }
+    
     /* Better container spacing */
     .main .block-container {
         padding-top: 1rem;
@@ -91,6 +86,7 @@ st.markdown("""
         padding-right: 1rem;
         max-width: 100%;
     }
+    
     /* Force column wrapping on medium screens (laptops) */
     @media screen and (max-width: 1200px) {
         .medium-stack {
@@ -107,6 +103,7 @@ st.markdown("""
             font-size: 0.8rem;
         }
     }
+    
     /* Adjust metrics for small screens */
     @media screen and (max-width: 992px) {
         [data-testid="stMetricValue"] {
@@ -120,6 +117,7 @@ st.markdown("""
             padding-right: 0.5rem;
         }
     }
+    
     /* Adjust metrics for mobile */
     @media screen and (max-width: 640px) {
         [data-testid="stMetricValue"] {
@@ -132,6 +130,7 @@ st.markdown("""
             flex-direction: column !important;
         }
     }
+    
     /* Fix sidebar on small screens */
     @media screen and (max-width: 768px) {
         .st-emotion-cache-z5fcl4 {
@@ -139,10 +138,12 @@ st.markdown("""
             padding-right: 0.5rem !important;
         }
     }
+    
     /* Improve form layout */
     .responsive-form .st-emotion-cache-ocqkz7 {
         flex-direction: column !important;
     }
+    
     /* Make columns stack on mobile */
     @media screen and (max-width: 768px) {
         .mobile-stack {
@@ -151,7 +152,6 @@ st.markdown("""
         .mobile-stack > div {
             width: 100% !important;
         }
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -434,26 +434,64 @@ def show_login():
         - Username: viewer (view-only access)
         """)
 
-# Dashboard function - FIXED to avoid string formatting issues
+# Dashboard function
 def show_dashboard():
     st.header("Financial Dashboard")
     
-    # Get the financial metrics
+    # Summary cards in a row with better styling
     balance = get_balance()
     reserve = get_emergency_reserve()
     available = balance - reserve
     
-    # Use Streamlit's built-in metrics instead of custom HTML/CSS
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.metric("Current Balance", f"KD {balance:.2f}")
-    
-    with col2:
-        st.metric("Emergency Reserve (15%)", f"KD {reserve:.2f}")
-    
-    with col3:
-        st.metric("Available Funds", f"KD {available:.2f}")
+    # Custom CSS for dashboard metrics
+    st.markdown("""
+        <style>
+        .dashboard-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0 2rem 0;
+        }
+        .metric-card {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        .metric-title {
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .dashboard-metrics {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+            .metric-value {
+                font-size: 1.2rem;
+            }
+        }
+        </style>
+        
+        <div class="dashboard-metrics">
+            <div class="metric-card">
+                <div class="metric-title">Current Balance</div>
+                <div class="metric-value">KD {:.2f}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Emergency Reserve (15%)</div>
+                <div class="metric-value">KD {:.2f}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Available Funds</div>
+                <div class="metric-value">KD {:.2f}</div>
+            </div>
+        </div>
+    """.format(balance, reserve, available), unsafe_allow_html=True)
     
     # Recent transactions
     st.subheader("Recent Transactions")
@@ -469,16 +507,28 @@ def show_dashboard():
         display_columns = [col for col in ["date", "description", "category", "income", "expense", "authorized_by"] 
                            if col in recent_transactions.columns]
         
-        # Display the dataframe
+        # Create a styled dataframe with better formatting
         st.dataframe(recent_transactions[display_columns], use_container_width=True)
     else:
-        st.info("No transactions recorded yet.")
+        # Use a styled container for the info message
+        st.markdown("""
+            <div style="background-color:#F0F2F6; padding:1rem; border-radius:5px; margin-bottom:1rem;">
+                <p style="margin:0; color:#31333F; font-size:0.9rem;">No transactions recorded yet.</p>
+            </div>
+        """, unsafe_allow_html=True)
     
     # Budget overview with tables
     st.subheader("Budget Overview")
     
-    # Income budget vs actual
-    st.subheader("Income: Budget vs. Actual")
+    # Use the medium-stack class for better handling on medium screens
+    cols_div = '<div class="medium-stack">'
+    st.markdown(cols_div, unsafe_allow_html=True)
+    
+    # Income budget vs actual - single column layout for better readability
+    st.markdown("""
+        <h4 style="margin-top:1.2rem; margin-bottom:0.7rem;">Income: Budget vs. Actual</h4>
+    """, unsafe_allow_html=True)
+    
     income_data = []
     for category, values in st.session_state.budget["income"].items():
         income_data.append({
@@ -490,15 +540,15 @@ def show_dashboard():
     
     if income_data:
         income_df = pd.DataFrame(income_data)
-        st.dataframe(
-            income_df, 
-            use_container_width=True,
-            hide_index=True,
-            height=min(len(income_df) * 35 + 38, 250)  # Adaptive height based on content
-        )
+        # Ensure dataframe has proper styling
+        st.dataframe(income_df, use_container_width=True, 
+                    height=min(400, len(income_data) * 35 + 38))
     
     # Expense budget vs actual
-    st.subheader("Expenses: Budget vs. Actual")
+    st.markdown("""
+        <h4 style="margin-top:1.2rem; margin-bottom:0.7rem;">Expenses: Budget vs. Actual</h4>
+    """, unsafe_allow_html=True)
+    
     expense_data = []
     for category, values in st.session_state.budget["expenses"].items():
         expense_data.append({
@@ -510,16 +560,20 @@ def show_dashboard():
     
     if expense_data:
         expense_df = pd.DataFrame(expense_data)
-        st.dataframe(
-            expense_df, 
-            use_container_width=True,
-            hide_index=True,
-            height=min(len(expense_df) * 35 + 38, 250)  # Adaptive height based on content
-        )
+        # Ensure dataframe has proper styling with dynamic height
+        st.dataframe(expense_df, use_container_width=True, 
+                    height=min(400, len(expense_data) * 35 + 38))
+    
+    # Close the mobile-stack div
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Quick actions (shown only to admin users)
     if st.session_state.user_role == "admin":
         st.subheader("Quick Actions")
+        
+        # Use the mobile-stack class for responsive columns
+        cols_div = '<div class="mobile-stack">'
+        st.markdown(cols_div, unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
         
@@ -534,6 +588,9 @@ def show_dashboard():
         with col3:
             if st.button("Manage Budget", use_container_width=True):
                 st.session_state.page = "budget"
+        
+        # Close the mobile-stack div
+        st.markdown('</div>', unsafe_allow_html=True)
     else:
         # For viewer role, only show report generation button
         st.subheader("Quick Actions")
@@ -617,12 +674,7 @@ def show_transactions():
         # Select columns to display
         display_columns = [col for col in ["date", "description", "category", "income", "expense", "authorized_by", "receipt_num", "notes"]
                            if col in transactions_df.columns]
-                        st.dataframe(
-                    transactions_df[display_columns], 
-                    use_container_width=True,
-                    hide_index=True,
-                    height=min(len(transactions_df) * 35 + 38, 300)  # Adaptive height based on content
-                )
+        st.dataframe(transactions_df[display_columns], use_container_width=True)
         
         # Export option
         if st.button("Export Transactions to CSV", use_container_width=True):
@@ -750,7 +802,7 @@ def show_budget():
         # Close the responsive-budget div
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Budget overview
+    # Budget summary
     st.subheader("Budget Summary")
     
     # Calculate totals
@@ -759,20 +811,87 @@ def show_budget():
     total_expense_budget = sum(values["budget"] for values in st.session_state.budget["expenses"].values())
     total_expense_actual = sum(values["actual"] for values in st.session_state.budget["expenses"].values())
     
-    # Display summary metrics
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.metric("Total Income Budget", f"KD {total_income_budget:.2f}")
-        st.metric("Total Income Actual", f"KD {total_income_actual:.2f}", 
-                f"{(total_income_actual - total_income_budget):.2f}")
-    
-    with col2:
-        st.metric("Total Expense Budget", f"KD {total_expense_budget:.2f}")
-        st.metric("Total Expense Actual", f"KD {total_expense_actual:.2f}", 
-                f"{(total_expense_actual - total_expense_budget):.2f}")
+    # Use responsive grid layout with better styling
+    st.markdown("""
+        <style>
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-card {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        .summary-title {
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+        .summary-delta {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .positive {
+            color: #28a745;
+        }
+        .negative {
+            color: #dc3545;
+        }
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            .summary-value {
+                font-size: 1.1rem;
+            }
+        }
+        </style>
+        
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-title">Total Income Budget</div>
+                <div class="summary-value">KD {:.2f}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">Total Income Actual</div>
+                <div class="summary-value">KD {:.2f}</div>
+                <div class="summary-delta {}">({:.2f})</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">Total Expense Budget</div>
+                <div class="summary-value">KD {:.2f}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">Total Expense Actual</div>
+                <div class="summary-value">KD {:.2f}</div>
+                <div class="summary-delta {}">({:.2f})</div>
+            </div>
+        </div>
+    """.format(
+        total_income_budget, 
+        total_income_actual,
+        "positive" if total_income_actual >= total_income_budget else "negative",
+        total_income_actual - total_income_budget,
+        total_expense_budget, 
+        total_expense_actual,
+        "negative" if total_expense_actual > total_expense_budget else "positive",
+        total_expense_actual - total_expense_budget
+    ), unsafe_allow_html=True)
     
     # Budget tables
+    # Use the medium-stack class to handle medium screens (laptops) better
+    cols_div = '<div class="medium-stack">'
+    st.markdown(cols_div, unsafe_allow_html=True)
+    
     # Income Budget
     st.subheader("Income Budget")
     income_data = []
@@ -802,6 +921,9 @@ def show_budget():
     if expense_data:
         expense_df = pd.DataFrame(expense_data)
         st.dataframe(expense_df, use_container_width=True)
+    
+    # Close the medium-stack div
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Budget visualization as text
     st.subheader("Budget Visualization")
@@ -891,12 +1013,7 @@ def show_events():
             display_columns = [col for col in ["Event Name", "Date", "Location", "Coordinator", 
                                "Projected Income", "Projected Expenses", "Status"]
                                if col in display_df.columns]
-            st.dataframe(
-                display_df[display_columns], 
-                use_container_width=True,
-                hide_index=True,
-                height=min(len(display_df) * 35 + 38, 300)  # Adaptive height based on content
-            )
+            st.dataframe(display_df[display_columns], use_container_width=True)
         except Exception as e:
             st.error(f"Error displaying events: {e}")
             st.write(events_df)
@@ -910,8 +1027,8 @@ def show_events():
             event = next((e for e in st.session_state.events if e["name"] == selected_event), None)
             
             if event:
-                # Use the medium-stack class for responsive columns
-                cols_div = '<div class="medium-stack">'
+                # Use the mobile-stack class for responsive columns
+                cols_div = '<div class="mobile-stack">'
                 st.markdown(cols_div, unsafe_allow_html=True)
                 
                 col1, col2 = st.columns(2)
@@ -936,7 +1053,7 @@ def show_events():
                     st.write(f"**Actual Expenses:** KD {event['actual_expenses']:.2f}")
                     st.write(f"**Actual Profit:** KD {actual_profit:.2f}")
                 
-                # Close the medium-stack div
+                # Close the mobile-stack div
                 st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Update event status
@@ -1076,13 +1193,7 @@ def show_reports():
                 # Select columns to display
                 display_columns = [col for col in ["date", "description", "category", "income", "expense", "authorized_by"]
                                   if col in transactions_df.columns]
-                # Set an appropriate fixed height based on row count to avoid scrollbars
-            st.dataframe(
-                transactions_df[display_columns], 
-                use_container_width=True,
-                hide_index=True,
-                height=min(len(transactions_df) * 35 + 38, 400)  # Adaptive height based on content
-            )
+                st.dataframe(transactions_df[display_columns], use_container_width=True)
             else:
                 st.info("No transactions for this period.")
     
@@ -1164,12 +1275,7 @@ def show_fundraising():
             display_columns = [col for col in ["Initiative Name", "Dates", "Coordinator", 
                               "Goal Amount", "Amount Raised", "Status"]
                               if col in display_df.columns]
-            st.dataframe(
-                display_df[display_columns], 
-                use_container_width=True,
-                hide_index=True,
-                height=min(len(display_df) * 35 + 38, 300)  # Adaptive height based on content
-            )
+            st.dataframe(display_df[display_columns], use_container_width=True)
         except Exception as e:
             st.error(f"Error displaying fundraising initiatives: {e}")
             st.write(fundraising_df)
