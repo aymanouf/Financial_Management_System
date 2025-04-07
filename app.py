@@ -23,21 +23,56 @@ st.markdown("""
     div[data-baseweb="input"], div[data-baseweb="textarea"] {
         width: 100%;
     }
+
+    /* --- MODIFIED TABLE STYLING --- */
     /* Enhance table styling */
     .stDataFrame {
-        overflow-x: auto;
-        max-width: 100%;
+        /* overflow-x: auto;  <-- REMOVED or comment out */
+        /* max-width: 100%; <-- Keep if needed, but use_container_width handles this */
         border: 1px solid #e6e6e6;
         border-radius: 5px;
         margin-bottom: 1.5rem;
     }
+
+    /* Adjust font sizes for better readability */
+    .dataframe { /* Targets the table element inside .stDataFrame */
+        font-size: 0.85rem;
+        /* Remove width: 100% here if using use_container_width=True */
+    }
+
+    /* Improve table display (st.table specific, less relevant for st.dataframe) */
+    /* If you are NOT using st.table, you can remove this rule */
+    [data-testid="stTable"] {
+        /* overflow-x: auto; <-- REMOVED or comment out */
+        max-width: 100%;
+        display: block;
+    }
+
+    /* Improve table column sizes */
+    table.dataframe th { /* Targets header cells */
+        padding: 0.5rem !important;
+        min-width: 80px; /* Keep if you want a minimum width */
+        white-space: normal; /* Allow header text to wrap if needed */
+        text-align: left; /* Ensure headers align left */
+    }
+
+    table.dataframe td { /* Targets data cells */
+        padding: 0.5rem !important;
+        white-space: normal !important; /* <-- CHANGED from nowrap to normal */
+        word-wrap: break-word; /* Added for better breaking */
+    }
+    /* --- END OF MODIFIED TABLE STYLING --- */
+
+
     /* Add some spacing between sections */
     h2, h3, .stSubheader {
         margin-top: 1.5rem !important;
         margin-bottom: 1rem !important;
     }
-    /* Style info messages better */
-    .st-emotion-cache-16txz8 {
+    /* Style info messages better (Avoid targeting unstable classes if possible) */
+    /* .st-emotion-cache-16txz8 { */
+    /* Replaced with more general approach if possible, or accept potential breakage */
+    div[data-testid="stInfo"], div[data-testid="stWarning"], div[data-testid="stError"], div[data-testid="stSuccess"] {
         padding: 1rem;
         border-radius: 5px;
         margin-bottom: 1.5rem;
@@ -46,32 +81,15 @@ st.markdown("""
     .stButton > button {
         width: 100%;
     }
-    /* Adjust font sizes for better readability */
-    .dataframe {
-        font-size: 0.85rem;
-    }
-    /* Improve table display */
-    [data-testid="stTable"] {
-        overflow-x: auto;
-        max-width: 100%;
-        display: block;
-    }
-    /* Improve table column sizes */
-    table.dataframe th {
-        padding: 0.5rem !important;
-        min-width: 80px;
-    }
-    table.dataframe td {
-        padding: 0.5rem !important;
-        white-space: nowrap;
-    }
+
     /* Better container spacing */
     .main .block-container {
         padding-top: 1rem;
         padding-left: 1rem;
         padding-right: 1rem;
-        max-width: 100%;
+        /* max-width: 100%; <-- Usually default for wide layout */
     }
+
     /* Force column wrapping on medium screens (laptops) */
     @media screen and (max-width: 1200px) {
         .medium-stack {
@@ -109,28 +127,34 @@ st.markdown("""
         [data-testid="stMetricDelta"] {
             font-size: 0.7rem !important;
         }
-        .st-emotion-cache-u8hs99 {
-            flex-direction: column !important;
-        }
+        /* Avoid targeting unstable classes like st-emotion-cache-u8hs99 */
+        /* If this targets st.columns container, use a custom class or rethink layout */
     }
     /* Fix sidebar on small screens */
     @media screen and (max-width: 768px) {
-        .st-emotion-cache-z5fcl4 {
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
+         /* Avoid targeting unstable classes like st-emotion-cache-z5fcl4 */
+        section[data-testid="stSidebar"] > div:first-child {
+             padding-left: 0.5rem !important;
+             padding-right: 0.5rem !important;
         }
     }
     /* Improve form layout */
-    .responsive-form .st-emotion-cache-ocqkz7 {
-        flex-direction: column !important;
+    .responsive-form .stForm > div { /* More specific selector for form content */
+         /* Avoid targeting unstable classes like st-emotion-cache-ocqkz7 */
+         /* Apply column stacking via Streamlit columns or CSS flex */
     }
     /* Make columns stack on mobile */
     @media screen and (max-width: 768px) {
         .mobile-stack {
             flex-direction: column !important;
         }
-        .mobile-stack > div {
+        .mobile-stack > div[data-testid="stVerticalBlock"] { /* Target the blocks within columns */
             width: 100% !important;
+            min-width: unset !important; /* Reset min-width */
+        }
+         /* Adjust budget adjustment layout */
+        .responsive-budget .mobile-stack > div[data-testid="stVerticalBlock"] {
+             margin-bottom: 0.5rem; /* Add spacing between stacked items */
         }
     }
 </style>
