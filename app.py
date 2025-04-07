@@ -14,7 +14,6 @@ st.set_page_config(
 
 # Add custom CSS for responsiveness
 st.markdown("""
-<style>
     /* Improve general responsiveness */
     .stApp {
         max-width: 100%;
@@ -30,10 +29,26 @@ st.markdown("""
         width: 100%;
     }
     
-    /* Make dataframes scroll horizontally on small screens */
+    /* Enhance table styling */
     .stDataFrame {
         overflow-x: auto;
         max-width: 100%;
+        border: 1px solid #e6e6e6;
+        border-radius: 5px;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Add some spacing between sections */
+    h2, h3, .stSubheader {
+        margin-top: 1.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    /* Style info messages better */
+    .st-emotion-cache-16txz8 {
+        padding: 1rem;
+        border-radius: 5px;
+        margin-bottom: 1.5rem;
     }
     
     /* Improve button layout */
@@ -51,6 +66,25 @@ st.markdown("""
         overflow-x: auto;
         max-width: 100%;
         display: block;
+    }
+    
+    /* Improve table column sizes */
+    table.dataframe th {
+        padding: 0.5rem !important;
+        min-width: 80px;
+    }
+    
+    table.dataframe td {
+        padding: 0.5rem !important;
+        white-space: nowrap;
+    }
+    
+    /* Better container spacing */
+    .main .block-container {
+        padding-top: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        max-width: 100%;
     }
     
     /* Force column wrapping on medium screens (laptops) */
@@ -77,6 +111,10 @@ st.markdown("""
         }
         [data-testid="stMetricDelta"] {
             font-size: 0.8rem !important;
+        }
+        .main .block-container {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
         }
     }
     
@@ -114,7 +152,6 @@ st.markdown("""
         .mobile-stack > div {
             width: 100% !important;
         }
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -401,36 +438,60 @@ def show_login():
 def show_dashboard():
     st.header("Financial Dashboard")
     
-    # Summary cards in a row - use medium-stack for better handling on laptops
-    cols_div = '<div class="medium-stack">'
-    st.markdown(cols_div, unsafe_allow_html=True)
+    # Summary cards in a row with better styling
+    balance = get_balance()
+    reserve = get_emergency_reserve()
+    available = balance - reserve
     
-    # Use different layouts based on screen size
-    if st.session_state.device_type == "mobile":
-        # On very small screens, stack all metrics
-        balance = get_balance()
-        reserve = get_emergency_reserve()
-        available = balance - reserve
+    # Custom CSS for dashboard metrics
+    st.markdown("""
+        <style>
+        .dashboard-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0 2rem 0;
+        }
+        .metric-card {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        .metric-title {
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .dashboard-metrics {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+            .metric-value {
+                font-size: 1.2rem;
+            }
+        }
+        </style>
         
-        st.metric("Current Balance", f"KD {balance:.2f}")
-        st.metric("Emergency Reserve (15%)", f"KD {reserve:.2f}")
-        st.metric("Available Funds", f"KD {available:.2f}")
-    else:
-        # On larger screens, use columns
-        col1, col2, col3 = st.columns(3)
-        
-        balance = get_balance()
-        reserve = get_emergency_reserve()
-        available = balance - reserve
-        
-        with col1:
-            st.metric("Current Balance", f"KD {balance:.2f}")
-        
-        with col2:
-            st.metric("Emergency Reserve (15%)", f"KD {reserve:.2f}")
-        
-        with col3:
-            st.metric("Available Funds", f"KD {available:.2f}")
+        <div class="dashboard-metrics">
+            <div class="metric-card">
+                <div class="metric-title">Current Balance</div>
+                <div class="metric-value">KD {:.2f}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Emergency Reserve (15%)</div>
+                <div class="metric-value">KD {:.2f}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Available Funds</div>
+                <div class="metric-value">KD {:.2f}</div>
+            </div>
+        </div>
+    """.format(balance, reserve, available), unsafe_allow_html=True)
     
     # Recent transactions
     st.subheader("Recent Transactions")
@@ -445,9 +506,16 @@ def show_dashboard():
         # Select only the columns we want to display
         display_columns = [col for col in ["date", "description", "category", "income", "expense", "authorized_by"] 
                            if col in recent_transactions.columns]
+        
+        # Create a styled dataframe with better formatting
         st.dataframe(recent_transactions[display_columns], use_container_width=True)
     else:
-        st.info("No transactions recorded yet.")
+        # Use a styled container for the info message
+        st.markdown("""
+            <div style="background-color:#F0F2F6; padding:1rem; border-radius:5px; margin-bottom:1rem;">
+                <p style="margin:0; color:#31333F; font-size:0.9rem;">No transactions recorded yet.</p>
+            </div>
+        """, unsafe_allow_html=True)
     
     # Budget overview with tables
     st.subheader("Budget Overview")
@@ -457,7 +525,10 @@ def show_dashboard():
     st.markdown(cols_div, unsafe_allow_html=True)
     
     # Income budget vs actual - single column layout for better readability
-    st.write("**Income: Budget vs. Actual**")
+    st.markdown("""
+        <h4 style="margin-top:1.2rem; margin-bottom:0.7rem;">Income: Budget vs. Actual</h4>
+    """, unsafe_allow_html=True)
+    
     income_data = []
     for category, values in st.session_state.budget["income"].items():
         income_data.append({
@@ -469,10 +540,15 @@ def show_dashboard():
     
     if income_data:
         income_df = pd.DataFrame(income_data)
-        st.dataframe(income_df, use_container_width=True)
+        # Ensure dataframe has proper styling
+        st.dataframe(income_df, use_container_width=True, 
+                    height=min(400, len(income_data) * 35 + 38))
     
     # Expense budget vs actual
-    st.write("**Expenses: Budget vs. Actual**")
+    st.markdown("""
+        <h4 style="margin-top:1.2rem; margin-bottom:0.7rem;">Expenses: Budget vs. Actual</h4>
+    """, unsafe_allow_html=True)
+    
     expense_data = []
     for category, values in st.session_state.budget["expenses"].items():
         expense_data.append({
@@ -484,7 +560,9 @@ def show_dashboard():
     
     if expense_data:
         expense_df = pd.DataFrame(expense_data)
-        st.dataframe(expense_df, use_container_width=True)
+        # Ensure dataframe has proper styling with dynamic height
+        st.dataframe(expense_df, use_container_width=True, 
+                    height=min(400, len(expense_data) * 35 + 38))
     
     # Close the mobile-stack div
     st.markdown('</div>', unsafe_allow_html=True)
@@ -724,7 +802,7 @@ def show_budget():
         # Close the responsive-budget div
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Budget overview
+    # Budget summary
     st.subheader("Budget Summary")
     
     # Calculate totals
@@ -733,60 +811,81 @@ def show_budget():
     total_expense_budget = sum(values["budget"] for values in st.session_state.budget["expenses"].values())
     total_expense_actual = sum(values["actual"] for values in st.session_state.budget["expenses"].values())
     
-    # Display summary metrics with better responsive handling
-    cols_div = '<div class="medium-stack">'
-    st.markdown(cols_div, unsafe_allow_html=True)
-    
-    # On mobile, use 2x2 grid
-    if st.session_state.device_type == "mobile":
-        row1_cols = st.columns(2)
-        with row1_cols[0]:
-            st.metric("Income Budget", f"KD {total_income_budget:.2f}")
-        with row1_cols[1]:
-            st.metric("Income Actual", f"KD {total_income_actual:.2f}", 
-                    f"{(total_income_actual - total_income_budget):.2f}")
+    # Use responsive grid layout with better styling
+    st.markdown("""
+        <style>
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-card {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        .summary-title {
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+        .summary-delta {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .positive {
+            color: #28a745;
+        }
+        .negative {
+            color: #dc3545;
+        }
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            .summary-value {
+                font-size: 1.1rem;
+            }
+        }
+        </style>
         
-        row2_cols = st.columns(2)
-        with row2_cols[0]:
-            st.metric("Expense Budget", f"KD {total_expense_budget:.2f}")
-        with row2_cols[1]:
-            st.metric("Expense Actual", f"KD {total_expense_actual:.2f}", 
-                    f"{(total_expense_actual - total_expense_budget):.2f}")
-    # On iPad/small laptop screens, use 2x2 grid
-    elif st.session_state.device_type == "tablet" or (hasattr(st, 'experimental_get_viewport_size') and st.experimental_get_viewport_size()['width'] < 1100):
-        row1_cols = st.columns(2)
-        with row1_cols[0]:
-            st.metric("Total Income Budget", f"KD {total_income_budget:.2f}")
-        with row1_cols[1]:
-            st.metric("Total Income Actual", f"KD {total_income_actual:.2f}", 
-                    f"{(total_income_actual - total_income_budget):.2f}")
-        
-        row2_cols = st.columns(2)
-        with row2_cols[0]:
-            st.metric("Total Expense Budget", f"KD {total_expense_budget:.2f}")
-        with row2_cols[1]:
-            st.metric("Total Expense Actual", f"KD {total_expense_actual:.2f}", 
-                    f"{(total_expense_actual - total_expense_budget):.2f}")
-    # On larger screens, use 4 columns
-    else:
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("Total Income Budget", f"KD {total_income_budget:.2f}")
-        
-        with col2:
-            st.metric("Total Income Actual", f"KD {total_income_actual:.2f}", 
-                    f"{(total_income_actual - total_income_budget):.2f}")
-        
-        with col3:
-            st.metric("Total Expense Budget", f"KD {total_expense_budget:.2f}")
-        
-        with col4:
-            st.metric("Total Expense Actual", f"KD {total_expense_actual:.2f}", 
-                    f"{(total_expense_actual - total_expense_budget):.2f}")
-    
-    # Close the medium-stack div
-    st.markdown('</div>', unsafe_allow_html=True)
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-title">Total Income Budget</div>
+                <div class="summary-value">KD {:.2f}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">Total Income Actual</div>
+                <div class="summary-value">KD {:.2f}</div>
+                <div class="summary-delta {}">({:.2f})</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">Total Expense Budget</div>
+                <div class="summary-value">KD {:.2f}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">Total Expense Actual</div>
+                <div class="summary-value">KD {:.2f}</div>
+                <div class="summary-delta {}">({:.2f})</div>
+            </div>
+        </div>
+    """.format(
+        total_income_budget, 
+        total_income_actual,
+        "positive" if total_income_actual >= total_income_budget else "negative",
+        total_income_actual - total_income_budget,
+        total_expense_budget, 
+        total_expense_actual,
+        "negative" if total_expense_actual > total_expense_budget else "positive",
+        total_expense_actual - total_expense_budget
+    ), unsafe_allow_html=True)
     
     # Budget tables
     # Use the medium-stack class to handle medium screens (laptops) better
