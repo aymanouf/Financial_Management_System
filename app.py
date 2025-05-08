@@ -28,51 +28,42 @@ st.markdown("""
     /* --- MODIFIED TABLE STYLING --- */
     /* Enhance table styling */
     .stDataFrame {
-        /* overflow-x: auto;  <-- REMOVED or comment out */
-        /* max-width: 100%; <-- Keep if needed, but use_container_width handles this */
         border: 1px solid #e6e6e6;
         border-radius: 5px;
         margin-bottom: 1.5rem;
     }
 
     /* Adjust font sizes for better readability */
-    .dataframe { /* Targets the table element inside .stDataFrame */
+    .dataframe { 
         font-size: 0.85rem;
-        /* Remove width: 100% here if using use_container_width=True */
     }
 
-    /* Improve table display (st.table specific, less relevant for st.dataframe) */
-    /* If you are NOT using st.table, you can remove this rule */
+    /* Improve table display */
     [data-testid="stTable"] {
-        /* overflow-x: auto; <-- REMOVED or comment out */
         max-width: 100%;
         display: block;
     }
 
     /* Improve table column sizes */
-    table.dataframe th { /* Targets header cells */
+    table.dataframe th { 
         padding: 0.5rem !important;
-        min-width: 80px; /* Keep if you want a minimum width */
-        white-space: normal; /* Allow header text to wrap if needed */
-        text-align: left; /* Ensure headers align left */
+        min-width: 80px; 
+        white-space: normal; 
+        text-align: left; 
     }
 
-    table.dataframe td { /* Targets data cells */
+    table.dataframe td { 
         padding: 0.5rem !important;
-        white-space: normal !important; /* <-- CHANGED from nowrap to normal */
-        word-wrap: break-word; /* Added for better breaking */
+        white-space: normal !important; 
+        word-wrap: break-word; 
     }
-    /* --- END OF MODIFIED TABLE STYLING --- */
-
 
     /* Add some spacing between sections */
     h2, h3, .stSubheader {
         margin-top: 1.5rem !important;
         margin-bottom: 1rem !important;
     }
-    /* Style info messages better (Avoid targeting unstable classes if possible) */
-    /* .st-emotion-cache-16txz8 { */
-    /* Replaced with more general approach if possible, or accept potential breakage */
+    
     div[data-testid="stInfo"], div[data-testid="stWarning"], div[data-testid="stError"], div[data-testid="stSuccess"] {
         padding: 1rem;
         border-radius: 5px;
@@ -88,7 +79,6 @@ st.markdown("""
         padding-top: 1rem;
         padding-left: 1rem;
         padding-right: 1rem;
-        /* max-width: 100%; <-- Usually default for wide layout */
     }
 
     /* Force column wrapping on medium screens (laptops) */
@@ -128,41 +118,31 @@ st.markdown("""
         [data-testid="stMetricDelta"] {
             font-size: 0.7rem !important;
         }
-        /* Avoid targeting unstable classes like st-emotion-cache-u8hs99 */
-        /* If this targets st.columns container, use a custom class or rethink layout */
     }
     /* Fix sidebar on small screens */
     @media screen and (max-width: 768px) {
-         /* Avoid targeting unstable classes like st-emotion-cache-z5fcl4 */
         section[data-testid="stSidebar"] > div:first-child {
              padding-left: 0.5rem !important;
              padding-right: 0.5rem !important;
         }
-    }
-    /* Improve form layout */
-    .responsive-form .stForm > div { /* More specific selector for form content */
-         /* Avoid targeting unstable classes like st-emotion-cache-ocqkz7 */
-         /* Apply column stacking via Streamlit columns or CSS flex */
     }
     /* Make columns stack on mobile */
     @media screen and (max-width: 768px) {
         .mobile-stack {
             flex-direction: column !important;
         }
-        .mobile-stack > div[data-testid="stVerticalBlock"] { /* Target the blocks within columns */
+        .mobile-stack > div[data-testid="stVerticalBlock"] { 
             width: 100% !important;
-            min-width: unset !important; /* Reset min-width */
+            min-width: unset !important; 
         }
-         /* Adjust budget adjustment layout */
         .responsive-budget .mobile-stack > div[data-testid="stVerticalBlock"] {
-             margin-bottom: 0.5rem; /* Add spacing between stacked items */
+             margin-bottom: 0.5rem; 
         }
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Password configuration
-# These would ideally be stored more securely in a production environment
 def check_credentials(username, password, user_credentials):
     """Check if username and password match stored credentials"""
     if username in user_credentials:
@@ -176,8 +156,7 @@ def get_user_role(username, user_credentials):
         return user_credentials[username]["role"]
     return None
 
-# User credentials - in a real app, this would be stored more securely
-# Format: {"username": {"password_hash": "hash_value", "role": "admin or viewer"}}
+# User credentials
 USER_CREDENTIALS = {
     "admin": {
         "password_hash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",  # "password"
@@ -192,13 +171,11 @@ USER_CREDENTIALS = {
 # Detect device type for responsive design
 def get_device_type():
     user_agent = platform.system()
-    # This is a simple detection that could be enhanced with browser user agent analysis
     if 'mobile' in user_agent.lower() or 'android' in user_agent.lower() or 'ios' in user_agent.lower():
         return "mobile"
     elif 'tablet' in user_agent.lower() or 'ipad' in user_agent.lower():
         return "tablet"
     else:
-        # Try to determine based on window width if available
         try:
             if hasattr(st, 'experimental_get_viewport_size'):
                 width = st.experimental_get_viewport_size()['width']
@@ -841,7 +818,8 @@ def show_transactions():
                 authorized_by = st.selectbox("Authorized By", authorizers)
                 
                 receipt_num = st.text_input("Receipt #")
-                notes = st.text_area("Notes", height=100)
+                # FIX: Remove the height parameter
+                notes = st.text_area("Notes")
                 
                 # Option to link to an event
                 event_options = [("None", None)] + [(e.get("name", "Unnamed Event"), e.get("id")) for e in st.session_state.events]
@@ -1122,7 +1100,8 @@ def show_events():
                 event_type = st.selectbox("Event Type", 
                                          ["School Trip", "Field Trip", "Museum Visit", "Park Visit", 
                                           "Cultural Event", "Sports Event", "Workshop", "Other"])
-                description = st.text_area("Event Description", height=100)
+                # FIX: Remove the height parameter
+                description = st.text_area("Event Description")
             
             with col2:
                 coordinator = st.selectbox("Event Coordinator", list(committee_members.keys()))
@@ -1254,7 +1233,8 @@ def show_events():
                                                               format="%.2f")
                                 payment_method = st.selectbox("Payment Method", ["Cash", "Bank Transfer", "Check", "Other"])
                             
-                            notes = st.text_area("Notes", height=50)
+                            # FIX: Remove the height parameter
+                            notes = st.text_area("Notes")
                             
                             submit = st.form_submit_button("Add Payment", use_container_width=True)
                             
@@ -1342,7 +1322,8 @@ def show_events():
                                 paid_to = st.text_input("Paid To")
                                 receipt_num = st.text_input("Receipt #")
                             
-                            notes = st.text_area("Notes", height=50)
+                            # FIX: Remove the height parameter
+                            notes = st.text_area("Notes")
                             
                             submit = st.form_submit_button("Add Expense", use_container_width=True)
                             
