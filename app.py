@@ -2094,11 +2094,11 @@ def show_events():
                                 ]
                                 
                                details_table = Table(details_data, colWidths=[2*inch, 3*inch])
-                                details_table.setStyle(TableStyle([
-                                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                                    ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-                                    ('GRID', (0, 0), (-1, -1), 1, colors.black)
-                                ]))
+                               details_table.setStyle(TableStyle([
+                                  ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                                     ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                                     ('GRID', (0, 0), (-1, -1), 1, colors.black)
+                                 ]))
                                 
                                 elements.append(details_table)
                                 elements.append(Spacer(1, 0.2*inch))
