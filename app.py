@@ -2093,7 +2093,7 @@ def show_events():
                                     ["Type", event['event_type']]
                                 ]
                                 
-                                details_table = Table(details_data, colWidths=[2*inch, 3*inch])
+                               details_table = Table(details_data, colWidths=[2*inch, 3*inch])
                                details_table.setStyle(TableStyle([
                                     ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                                     ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
